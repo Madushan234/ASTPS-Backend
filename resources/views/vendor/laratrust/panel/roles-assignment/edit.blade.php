@@ -47,7 +47,7 @@
             </label>
           @endforeach
         </div>
-        @if ($permissions)
+        <!-- @if ($permissions)
           <span class="block text-gray-700 mt-4">Permissions</span>
           <div class="flex flex-wrap justify-start mb-4">
             @foreach ($permissions as $permission)
@@ -63,7 +63,7 @@
               </label>
             @endforeach
           </div>
-        @endif
+        @endif -->
         <div class="flex justify-end">
           <a
             href="{{route("laratrust.roles-assignment.index", ['model' => $modelKey])}}"
