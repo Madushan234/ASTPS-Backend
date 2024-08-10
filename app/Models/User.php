@@ -30,7 +30,8 @@ class User extends Authenticatable
         'email_verified_at',
         'remember_token',
         'password',
-        'isDisable'
+        'isDisable',
+        'auth_type'
     ];
 
     /**
@@ -79,8 +80,9 @@ class User extends Authenticatable
         $mailService = new MailService([
             'to' => $email,
             'layoutName' => 'email.reset-password-email',
-            'subject' => 'Reset Password Notification',
+            'subject' => 'Reset Password Notification - ASTPS',
             'data' => [
+                'logo' => url("/assets/images/logo.png"),
                 'email' => $email,
                 'url' => url('/reset-password/'.$token.'/?email='.$email)
             ]

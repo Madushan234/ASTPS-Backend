@@ -15,6 +15,7 @@ Route::get('/user', function (Request $request) {
 
 Route::prefix('customer')->group(function () {
     Route::post('/register',  [CustomerAuthController::class, 'createCustomer']);
+    Route::post('/social-auth',  [CustomerAuthController::class, 'socialAuth'])->middleware('validateSocialAuth:["customer"]');
 });
 
 Route::prefix('customer')->middleware('checkUserRole:customer')->group(function () {

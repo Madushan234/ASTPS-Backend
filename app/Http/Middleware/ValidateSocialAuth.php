@@ -8,32 +8,30 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
-class CheckUserRole
+class ValidateSocialAuth
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next,string $role): Response
+    public function handle(Request $request, Closure $next, $rolesJson): Response
     {
+        $roles = json_decode($rolesJson, true);
         $user = User::where('email', $request->email)->first();
         if ($user) {
             if ($user && $user->isDisable) {
                 throw ValidationException::withMessages([
-                    'email' => 'This account is currently disabled.'
+                    'email' => 'This account is currently disabled.',
+                    'isUser' => true
                 ]);
-            } elseif ($user->hasRole($role)) {
-                return $next($request);
-            } else {
+            } elseif (!$user->hasRole($roles)) {
                 throw ValidationException::withMessages([
-                    'email' => 'You do not have the required authorization.'
+                    'email' => 'You do not have the required authorization.',
+                    'isUser' => true
                 ]);
             }
-        } else {
-            throw ValidationException::withMessages([
-                'email' => 'The selected email is invalid.'
-            ]);
         }
+        return $next($request);
     }
 }

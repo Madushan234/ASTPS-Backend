@@ -5,10 +5,12 @@ namespace App\Services\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\FcmToken;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use App\Services\Mail\MailService;
+use Google\Client as GoogleClient;
 
 class ApiAuthService
 {
@@ -20,8 +22,9 @@ class ApiAuthService
         $mailService = new MailService([
             'to' => $email,
             'layoutName' => 'email.welcome-email',
-            'subject' => 'Welcome email for ASTPS',
+            'subject' => 'Welcome to ASTPS',
             'data' => [
+                'logo' => url("/assets/images/logo.png"),
                 'email' => $email,
                 'name' => $name
             ]
@@ -39,6 +42,7 @@ class ApiAuthService
             'last_name' => $data['last_name'],
             'email' => $data['email'],
             'telephone' => $data['telephone'],
+            'auth_type' => $data['type'],
             'password' => Hash::make($data['password'])
         ]);
         $user->addRole('customer');
@@ -52,12 +56,12 @@ class ApiAuthService
     /**
      * api login
      **/
-    public function login(LoginRequest $request, $role)
+    public function login($request, $role)
     {
         $request->authenticate();
         if ($request->user()->hasRole($role)) {
             $token = $request->user()->createToken('auth_token');
-            if ($request->token) {
+            if ($request->fcmToken) {
                 FcmToken::updateOrCreate(
                     ['user_id' => $request->user()->id],
                     ['token' => $request->token]
@@ -69,7 +73,34 @@ class ApiAuthService
             ];
         }
         throw ValidationException::withMessages([
-            'email' => trans('auth.unauthorized'),
+            'email' => 'You do not have the required authorization.',
+        ]);
+    }
+
+    /**
+     * Social auth
+     **/
+    public function socialAuth($request, $role)
+    {
+        $user = User::where("email", $request->email)->first();
+        if (!$user) {
+            $userData = $this->createCustomer([
+                'first_name' => $request->firstName,
+                'last_name' => $request->lastName,
+                'email' => $request->email,
+                'telephone' => $request->telephone,
+                'auth_type' => $request->type,
+                'password' => Hash::make(uniqid())
+            ]);
+            $user = $userData['user'];
+        }
+
+        if ($user) {
+            return $this->login($request, $role);
+        }
+
+        throw ValidationException::withMessages([
+            'email' => 'Login Faild.',
         ]);
     }
 
