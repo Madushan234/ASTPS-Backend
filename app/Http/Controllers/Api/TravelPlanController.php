@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\TravelPlan\TravelPlanGenerateRequest;
+use App\Services\Api\TravelPlanService;
 use Illuminate\Support\Facades\Http;
 
 class TravelPlanController extends Controller
 {
+    private TravelPlanService $travelPlanService;
+
+    public function __construct(TravelPlanService $travelPlanService)
+    {
+        $this->travelPlanService = $travelPlanService;
+    }
+
     /**
      * Generate a travel plan.
      *
@@ -17,13 +25,7 @@ class TravelPlanController extends Controller
      */
     public function generateTravelPlan(TravelPlanGenerateRequest $request)
     {
-        $response = Http::post(env('TRAVEL_PLAN_GENERATE_API').'/generate-travel-plan', $request->all());
-
-        if ($response->successful()) {
-            return response()->json(json_decode($response->json()['travel_plan']), 200);
-        } else {
-            return response()->json(['error' => 'Unable to generate travel plan.'], 500);
-        }
+        return $this->travelPlanService->generateTravelPlan($request);
     }
 
     /**
@@ -37,13 +39,6 @@ class TravelPlanController extends Controller
         $validatedData = $request->validate([
             'location' => 'required|string',
         ]);
-
-        $response = Http::post(env('TRAVEL_PLAN_GENERATE_API').'/get-location-data', $validatedData);
-
-        if ($response->successful()) {
-            return response()->json(json_decode($response->json()['location_data']), 200);
-        } else {
-            return response()->json(['error' => 'Unable to get location details.'], 500);
-        }
+        return $this->travelPlanService->getLocationDetails($validatedData);
     }
 }
