@@ -82,6 +82,8 @@ class ApiAuthService
      **/
     public function socialAuth($request, $role)
     {
+        Log::alert($request->email);
+        Log::alert($request->type);
         $user = User::where("email", $request->email)->first();
         if (!$user) {
             $userData = $this->createCustomer([
@@ -89,7 +91,7 @@ class ApiAuthService
                 'last_name' => $request->lastName,
                 'email' => $request->email,
                 'telephone' => $request->telephone,
-                'auth_type' => $request->type,
+                'type' => $request->type,
                 'password' => Hash::make(uniqid())
             ]);
             $user = $userData['user'];

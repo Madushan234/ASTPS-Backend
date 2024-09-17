@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\Api\CustomerAuthController;
+use App\Http\Controllers\Api\TravelPlanController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -21,4 +22,13 @@ Route::prefix('customer')->group(function () {
 Route::prefix('customer')->middleware('checkUserRole:customer')->group(function () {
     Route::post('/login',  [CustomerAuthController::class, 'login']);
     Route::post('/forgot-password',  [CustomerAuthController::class, 'sendResetPasswordLink']);
+    Route::post('/forgot-password',  [CustomerAuthController::class, 'sendResetPasswordLink']);
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('customer')->group(function () {
+        Route::post('/generate-travel-plan',  [TravelPlanController::class, 'generateTravelPlan']);
+        Route::post('/get-location-details',  [TravelPlanController::class, 'getLocationDetails']);
+    });
 });

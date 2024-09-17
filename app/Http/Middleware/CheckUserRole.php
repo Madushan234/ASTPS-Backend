@@ -32,7 +32,7 @@ class CheckUserRole
             }
         } else {
             throw ValidationException::withMessages([
-                'email' => 'The selected email is invalid.'
+                'email' => 'The selected email is invalid'
             ]);
         }
     }
